@@ -1,0 +1,15 @@
+INFO:  2020-04-11 07:50:16,440 - sparkmonitorkernel - 39148 - MainProcess -         140447262484288 - MainThread
+ Starting Kernel Extension 
+
+INFO:  2020-04-11 07:50:16,440 - sparkmonitorkernel - 39148 - MainProcess -         140447262484288 - MainThread
+ Socket Listening on port 34171 
+
+INFO:  2020-04-11 07:50:16,441 - sparkmonitorkernel - 39148 - MainProcess -         140447052502784 - Thread-4
+ Starting socket thread, going to accept 
+
+INFO:  2020-04-11 07:50:16,441 - sparkmonitorkernel - 39148 - MainProcess -         140447262484288 - MainThread
+ 34171 
+
+INFO:  2020-04-11 07:50:16,584 - sparkmonitorkernel - 39148 - MainProcess -         140447262484288 - MainThread
+ Adding jar from /opt/conda/lib/python3.7/site-packages/sparkmonitor/listener.jar  
+
