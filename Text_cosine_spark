@@ -2,7 +2,7 @@
  "cells": [
   {
    "cell_type": "code",
-   "execution_count": 85,
+   "execution_count": 20,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -14,21 +14,17 @@
     "from pyspark.sql import SparkSession\n",
     "import pyspark.sql.types as t\n",
     "import pyspark.sql.functions as f\n",
-    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "from pyspark.ml.feature import HashingTF, IDF, RegexTokenizer, NGram\n",
+    "from pyspark.ml.linalg import *\n",
+    "from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer\n",
     "from sklearn.metrics.pairwise import cosine_similarity\n",
+    "\n",
     "import string as st"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 7,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -37,7 +33,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -45,39 +41,8 @@
    ]
   },
   {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "### This code defines a udf that takes in a column of strings and returns the average cosine similarity of the strings"
-   ]
-  },
-  {
    "cell_type": "code",
-   "execution_count": 39,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "\n",
-    "@f.udf(t.FloatType())\n",
-    "def text_cosine(col):\n",
-    "    num_rows = len(col)\n",
-    "    num_entries = (num_rows * (num_rows -1))/2\n",
-    "    if num_rows >= 10:\n",
-    "        \n",
-    "        vectorizer = TfidfVectorizer(analyzer = \"char\", lowercase=False)\n",
-    "        vectors = vectorizer.fit_transform(col)\n",
-    "        cosines = cosine_similarity(vectors)\n",
-    "        cosines = np.triu(cosines, k=1)\n",
-    "        \n",
-    "        return float(cosines.sum() / num_entries)\n",
-    "    \n",
-    "    else:\n",
-    "        return None"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 40,
+   "execution_count": 9,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -86,7 +51,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 63,
+   "execution_count": 10,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -97,7 +62,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 72,
+   "execution_count": 11,
    "metadata": {},
    "outputs": [
     {
@@ -129,33 +94,33 @@
        "  <tbody>\n",
        "    <tr>\n",
        "      <th>0</th>\n",
-       "      <td>ted.bland@enron.com</td>\n",
-       "      <td>4</td>\n",
-       "      <td>ochambe@cisco.com</td>\n",
+       "      <td>rian.rabe@oceanenergy.com</td>\n",
+       "      <td>3</td>\n",
+       "      <td>jhs40@home.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>1</th>\n",
-       "      <td>carlos.ruiz@enron.com</td>\n",
-       "      <td>1</td>\n",
-       "      <td>msmith@gtis.net</td>\n",
+       "      <td>BMahaffay@aol.com</td>\n",
+       "      <td>4</td>\n",
+       "      <td>lesliedoggett@hotmail.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>2</th>\n",
-       "      <td>mccluney.james@enron.com</td>\n",
-       "      <td>4</td>\n",
-       "      <td>perfmgmt@enron.com</td>\n",
+       "      <td>maria.sandoval@enron.com</td>\n",
+       "      <td>1</td>\n",
+       "      <td>david.karr@enron.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>3</th>\n",
-       "      <td>tore_myrholt@mckinsey.com</td>\n",
-       "      <td>1</td>\n",
-       "      <td>fcaspersen@knickerbockermgt.com</td>\n",
+       "      <td>TOMSKILLJR@aol.com</td>\n",
+       "      <td>4</td>\n",
+       "      <td>rhonda_henry@agfg.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>4</th>\n",
-       "      <td>larry_heard@transwestern.net</td>\n",
+       "      <td>julie.willner@goodyhair.com</td>\n",
        "      <td>2</td>\n",
-       "      <td>julie.cobb@enron.com</td>\n",
+       "      <td>jglass@mmind.net</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>...</th>\n",
@@ -165,33 +130,33 @@
        "    </tr>\n",
        "    <tr>\n",
        "      <th>5353</th>\n",
-       "      <td>andrews@boxerproperty.com</td>\n",
-       "      <td>2</td>\n",
-       "      <td>ed.mcmichael@enron.com</td>\n",
+       "      <td>carrie.robert@enron.com</td>\n",
+       "      <td>4</td>\n",
+       "      <td>danny.mccarty@enron.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>5354</th>\n",
-       "      <td>terry.west@enron.com</td>\n",
+       "      <td>casteel@nbtx.com</td>\n",
        "      <td>2</td>\n",
-       "      <td>Jeff_Hines@hines.com</td>\n",
+       "      <td>chetan.paipanandiker@enron.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>5355</th>\n",
-       "      <td>dhoornstra@uspi.com</td>\n",
-       "      <td>4</td>\n",
-       "      <td>amy.cavazos@enron.com</td>\n",
+       "      <td>lawrence.ciscon@enron.com</td>\n",
+       "      <td>3</td>\n",
+       "      <td>a..roberts@enron.com</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>5356</th>\n",
-       "      <td>Hector.Campos@ENRON.com</td>\n",
-       "      <td>1</td>\n",
-       "      <td>IMCEANOTES-John+20Sodergreen+20+3Cjohns+40scud...</td>\n",
+       "      <td>terrie_james@enron.net</td>\n",
+       "      <td>3</td>\n",
+       "      <td>drew.deberry@usda.gov</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>5357</th>\n",
-       "      <td>sherri.sear@enron.com</td>\n",
-       "      <td>3</td>\n",
-       "      <td>IMCEANOTES-+3CiPayit+40Enron+2Ecom+3E+40ENRON@...</td>\n",
+       "      <td>frank.hayden@enron.com</td>\n",
+       "      <td>1</td>\n",
+       "      <td>ronald.m.williams@accenture.com</td>\n",
        "    </tr>\n",
        "  </tbody>\n",
        "</table>\n",
@@ -199,36 +164,23 @@
        "</div>"
       ],
       "text/plain": [
-       "                             email  label  \\\n",
-       "0              ted.bland@enron.com      4   \n",
-       "1            carlos.ruiz@enron.com      1   \n",
-       "2         mccluney.james@enron.com      4   \n",
-       "3        tore_myrholt@mckinsey.com      1   \n",
-       "4     larry_heard@transwestern.net      2   \n",
-       "...                            ...    ...   \n",
-       "5353     andrews@boxerproperty.com      2   \n",
-       "5354          terry.west@enron.com      2   \n",
-       "5355           dhoornstra@uspi.com      4   \n",
-       "5356       Hector.Campos@ENRON.com      1   \n",
-       "5357         sherri.sear@enron.com      3   \n",
-       "\n",
-       "                                                  names  \n",
-       "0                                     ochambe@cisco.com  \n",
-       "1                                       msmith@gtis.net  \n",
-       "2                                    perfmgmt@enron.com  \n",
-       "3                       fcaspersen@knickerbockermgt.com  \n",
-       "4                                  julie.cobb@enron.com  \n",
-       "...                                                 ...  \n",
-       "5353                             ed.mcmichael@enron.com  \n",
-       "5354                               Jeff_Hines@hines.com  \n",
-       "5355                              amy.cavazos@enron.com  \n",
-       "5356  IMCEANOTES-John+20Sodergreen+20+3Cjohns+40scud...  \n",
-       "5357  IMCEANOTES-+3CiPayit+40Enron+2Ecom+3E+40ENRON@...  \n",
+       "                            email  label                            names\n",
+       "0       rian.rabe@oceanenergy.com      3                   jhs40@home.com\n",
+       "1               BMahaffay@aol.com      4        lesliedoggett@hotmail.com\n",
+       "2        maria.sandoval@enron.com      1             david.karr@enron.com\n",
+       "3              TOMSKILLJR@aol.com      4            rhonda_henry@agfg.com\n",
+       "4     julie.willner@goodyhair.com      2                 jglass@mmind.net\n",
+       "...                           ...    ...                              ...\n",
+       "5353      carrie.robert@enron.com      4          danny.mccarty@enron.com\n",
+       "5354             casteel@nbtx.com      2   chetan.paipanandiker@enron.com\n",
+       "5355    lawrence.ciscon@enron.com      3             a..roberts@enron.com\n",
+       "5356       terrie_james@enron.net      3            drew.deberry@usda.gov\n",
+       "5357       frank.hayden@enron.com      1  ronald.m.williams@accenture.com\n",
        "\n",
        "[5358 rows x 3 columns]"
       ]
      },
-     "execution_count": 72,
+     "execution_count": 11,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -239,7 +191,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 73,
+   "execution_count": 12,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -248,122 +200,123 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 74,
+   "execution_count": 27,
    "metadata": {},
    "outputs": [
     {
      "data": {
       "text/plain": [
-       "StructType(List(StructField(email,StringType,true),StructField(label,LongType,true),StructField(names,StringType,true)))"
+       "74"
       ]
      },
-     "execution_count": 74,
+     "execution_count": 27,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "email_df.schema"
+    "# check number of symbols/ngrams in set of strings\n",
+    "vectorizer = CountVectorizer(analyzer='char', lowercase=False, ngram_range=(1,1))\n",
+    "vectorizer = vectorizer.fit(email_list)\n",
+    "symbols = vectorizer.get_feature_names()\n",
+    "len(symbols)"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 75,
+   "execution_count": 13,
    "metadata": {},
    "outputs": [],
    "source": [
-    "result = email_df.groupBy(\"label\").agg(\n",
-    "    text_cosine(f.collect_list(\"email\")),\n",
-    "    text_cosine(f.collect_list(\"names\"))\n",
-    ")"
+    "def vectorize_string_cols(df, cols):\n",
+    "    other_cols = list(set(df.columns) - set(cols)) \n",
+    "    for col in cols:\n",
+    "        \n",
+    "        # if we wanted to try to improve the peformance of cosine sim,\n",
+    "        # spark.ml.feature.NGram can be used between tokenizer and TF\n",
+    "        tokenizer = RegexTokenizer(inputCol=f\"{col}\", outputCol=f\"{col}_chars\", gaps=False, pattern=\".\" )\n",
+    "        charData = tokenizer.transform(df)\n",
+    "        \n",
+    "        # this uses a hash function instead of the standard count vectorization\n",
+    "        # in general, if the load factor (num_symbols/num_features) is very small\n",
+    "        # the expected number of hash collisions is small, and so the hashing tf \n",
+    "        # should be very similar to the countVectorizer.\n",
+    "        # as load factor increases, the number of symbols hashed to the same number\n",
+    "        # will increase, but we could possibly use this to increase performance \n",
+    "        # if the number of features gets too large\n",
+    "        # the hashing algorithm works best when features is a power of 2\n",
+    "        \n",
+    "        hashingTF = HashingTF(inputCol=f\"{col}_chars\", outputCol=f\"{col}_rawFeatures\", numFeatures=2**7)\n",
+    "        featurizedData = hashingTF.transform(charData)\n",
+    "        \n",
+    "        # not 100% sure about this, but it was in the documentation. it might help\n",
+    "        # with the fact that idfModel makes two passes over the data.\n",
+    "        featurizedData.cache()\n",
+    "        \n",
+    "        idf = IDF(inputCol=f\"{col}_rawFeatures\", outputCol=f\"{col}_vec\")\n",
+    "        idfModel = idf.fit(featurizedData)\n",
+    "        df = idfModel.transform(featurizedData)\n",
+    "    \n",
+    "    new_columns =[f\"{col}_vec\" for col in cols]\n",
+    "    all_cols = cols+other_cols+new_columns\n",
+    "    vectorized = df.select(all_cols)\n",
+    "    return vectorized"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 76,
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "vectorized = vectorize_string_cols(email_df, ['email','names'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "+-----+--------------------------------------+--------------------------------------+\n",
-      "|label|text_cosine(collect_list(email, 0, 0))|text_cosine(collect_list(names, 0, 0))|\n",
-      "+-----+--------------------------------------+--------------------------------------+\n",
-      "|    1|                            0.45806172|                             0.4585806|\n",
-      "|    3|                            0.44925573|                             0.4704736|\n",
-      "|    2|                             0.4609185|                             0.4476878|\n",
-      "|    4|                             0.4545317|                             0.4571612|\n",
-      "+-----+--------------------------------------+--------------------------------------+\n",
+      "+--------------------+--------------------+-----+--------------------+--------------------+\n",
+      "|               email|               names|label|           email_vec|           names_vec|\n",
+      "+--------------------+--------------------+-----+--------------------+--------------------+\n",
+      "|rian.rabe@oceanen...|      jhs40@home.com|    3|(128,[0,7,26,49,6...|(128,[0,22,26,35,...|\n",
+      "|   BMahaffay@aol.com|lesliedoggett@hot...|    4|(128,[0,26,54,65,...|(128,[0,6,26,49,5...|\n",
+      "|maria.sandoval@en...|david.karr@enron.com|    1|(128,[0,6,7,26,54...|(128,[0,6,7,26,64...|\n",
+      "|  TOMSKILLJR@aol.com|rhonda_henry@agfg...|    4|(128,[0,26,54,64,...|(128,[0,6,7,26,49...|\n",
+      "|julie.willner@goo...|    jglass@mmind.net|    2|(128,[0,6,7,26,49...|(128,[0,6,7,49,54...|\n",
+      "+--------------------+--------------------+-----+--------------------+--------------------+\n",
+      "only showing top 5 rows\n",
       "\n"
      ]
     }
    ],
    "source": [
-    "result.show()"
+    "vectorized.show(5)"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "### This is a helper function for changing mapping in the cosine similarity"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 93,
+   "execution_count": 16,
    "metadata": {},
    "outputs": [],
    "source": [
-    "def token_mapper(list_of_string, dictionary):\n",
-    "    str1 = [''.join(str(e) for e in list(map(dictionary.get, string))) for string in list_of_string] \n",
-    "    return str(str1)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 100,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "\n",
     "@f.udf(t.FloatType())\n",
-    "def text_cosine2(col):\n",
+    "def vect_cosine(col):\n",
     "    num_rows = len(col)\n",
     "    num_entries = (num_rows * (num_rows -1))/2\n",
     "    if num_rows >= 10:\n",
     "        \n",
-    "        vectorizer1 = TfidfVectorizer(analyzer = \"char\", lowercase=False)\n",
-    "        vectorizer1 = vectorizer1.fit(col)\n",
-    "        alphabet = vectorizer1.get_feature_names()\n",
-    "        \n",
-    "        alphabet2 = {}\n",
-    "        for char in alphabet:\n",
-    "            if char in st.ascii_lowercase:\n",
-    "                alphabet2[char]=0\n",
-    "            elif char in st.ascii_uppercase:\n",
-    "                alphabet2[char]=1\n",
-    "            elif char in st.digits:\n",
-    "                alphabet2[char]=2\n",
-    "            else:\n",
-    "                alphabet2[char]=3\n",
+    "#         array_col = list(map(lambda x: x.toArray(), col))\n",
     "\n",
-    "        mapped = [token_mapper(string, alphabet2) for string in col]\n",
-    "        \n",
-    "        vectorizer2 = TfidfVectorizer(analyzer=\"char\", ngram_range=(2,4), lowercase=False)\n",
-    "        vectors = vectorizer2.fit_transform(mapped)\n",
-    "        cosines = cosine_similarity(vectors)\n",
+    "        cosines = cosine_similarity(col)\n",
     "        cosines = np.triu(cosines, k=1)\n",
     "        \n",
-    "        return float(cosines.sum() / num_entries)\n",
+    "        return float(np.sum(cosines)/num_entries)\n",
     "    \n",
     "    else:\n",
     "        return None"
@@ -371,33 +324,33 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 101,
+   "execution_count": 17,
    "metadata": {},
    "outputs": [],
    "source": [
-    "result = email_df.groupBy(\"label\").agg(\n",
-    "    text_cosine2(f.collect_list(\"email\")),\n",
-    "    text_cosine2(f.collect_list(\"names\"))\n",
+    "result = vectorized.groupBy(\"label\").agg(\n",
+    "    vect_cosine(f.collect_list(\"email_vec\")),\n",
+    "    vect_cosine(f.collect_list(\"names_vec\"))\n",
     ")"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 102,
+   "execution_count": 19,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "+-----+---------------------------------------+---------------------------------------+\n",
-      "|label|text_cosine2(collect_list(email, 0, 0))|text_cosine2(collect_list(names, 0, 0))|\n",
-      "+-----+---------------------------------------+---------------------------------------+\n",
-      "|    1|                               0.930034|                              0.9296541|\n",
-      "|    3|                               0.928316|                             0.93590695|\n",
-      "|    2|                              0.9293784|                              0.9219228|\n",
-      "|    4|                             0.92377895|                              0.9288583|\n",
-      "+-----+---------------------------------------+---------------------------------------+\n",
+      "+-----+------------------------------------------+------------------------------------------+\n",
+      "|label|vect_cosine(collect_list(email_vec, 0, 0))|vect_cosine(collect_list(names_vec, 0, 0))|\n",
+      "+-----+------------------------------------------+------------------------------------------+\n",
+      "|    1|                                0.24431038|                                0.25086948|\n",
+      "|    3|                                0.24200837|                                0.23898523|\n",
+      "|    2|                                0.23729812|                                0.24441099|\n",
+      "|    4|                                0.23789877|                                 0.2394096|\n",
+      "+-----+------------------------------------------+------------------------------------------+\n",
       "\n"
      ]
     }
@@ -405,13 +358,6 @@
    "source": [
     "result.show()"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
